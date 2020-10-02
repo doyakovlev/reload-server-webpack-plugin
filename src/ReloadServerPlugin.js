@@ -24,7 +24,7 @@ export default class ReloadServerPlugin {
   }
 
   apply(compiler) {
-    compiler.plugin("after-emit", (compilation, callback) => {
+    const afterEmit = (compilation, callback) => {
       this.done = callback;
       this.workers.forEach((worker) => {
         try {
@@ -37,6 +37,12 @@ export default class ReloadServerPlugin {
       this.workers = [];
 
       cluster.fork();
-    });
+    }
+
+    if (compiler.hooks) {
+      compiler.hooks.afterEmit.tapAsync('ReloadServerPlugin', afterEmit)
+    } else {
+      compiler.plugin("after-emit", afterEmit);
+    }
   }
 }
